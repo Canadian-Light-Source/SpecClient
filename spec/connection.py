@@ -398,7 +398,7 @@ class SpecProtocol(asyncio.Protocol):
         Arguments:
         chanName -- a string representing the channel name, i.e. 'var/toto'
         """
-        self.__send_msg_with_reply(
+        return self.__send_msg_with_reply(
             replyCallback=callback, *msg_chan_read(chanName, version=self.serverVersion)
         )
 
@@ -531,6 +531,14 @@ class SpecClient:
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
         self.sample_name = ""
+
+    def get_data(self, property, callback=None):
+        reply = self.protocol.send_msg_chan_read(property, callback=callback)
+        id = reply.id
+        if not callback and id > 0:
+            while not self.protocol.registeredReplies[id].data:
+                time.sleep(1)
+        return self.protocol.registeredReplies[id].data
 
     def register_channel(self, channel, reciever=None):
         self.protocol.registerChannel(channel, register=True, recieverSlot=reciever)
