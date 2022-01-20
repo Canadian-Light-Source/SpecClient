@@ -11,6 +11,19 @@ import logging
 import time
 import weakref
 
+try:
+    import sgmdata
+    import os
+    from bokeh.io import output_notebook
+
+    os.environ['JHUB_ADMIN'] = '1'
+    os.environ['JUPYTERHUB_USER'] = 'arthurz'
+    os.environ['DB_ENV_SECRET'] = config.get('db')
+    PLOT_ENABLED = True
+except:
+    PLOT_ENABLED = False
+    print("Running without plotting enabled")
+
 logger = logging.getLogger("SpecClient")
 logger.setLevel(logging.DEBUG)
 
@@ -261,7 +274,7 @@ class SpecProtocol(asyncio.Protocol):
         self.transport = transport
         self.send_msg_hello()
 
-    async def readFromStream(self, data):
+    def data_received(self, data):
         message = None
         self.buffer.append(data)
 
@@ -273,7 +286,8 @@ class SpecProtocol(asyncio.Protocol):
 
             try:
                 consumedBytes = message.readFromStream(s[offset:])
-            except:
+            except Exception as e:
+                print(f"MESSAGE ERROR: {e}")
                 if len(self.buffer):
                     self.buffer = self.buffer[1:]
                 else:
@@ -294,6 +308,9 @@ class SpecProtocol(asyncio.Protocol):
                             if replyID > 0:
                                 try:
                                     reply = self.registeredReplies[replyID]
+                                    if hasattr(reply, 'callback'):
+                                        if asyncio.iscoroutinefunction(reply.callback):
+                                            self.loop.create_task(reply.callback(reply))
                                 except BaseException:
                                     logging.getLogger("SpecClient").exception(
                                         "Unexpected error while receiving a message from server"
@@ -303,6 +320,7 @@ class SpecProtocol(asyncio.Protocol):
                                     reply.update(
                                         message.data, message.type == ERROR, message.err
                                     )
+
                         elif message.cmd == EVENT:
                             try:
                                 channel = self.registeredChannels[message.name]
@@ -322,9 +340,6 @@ class SpecProtocol(asyncio.Protocol):
                 finally:
                     message = None
             self.buffer = [s[offset:]]
-
-    def data_received(self, data):
-        self.loop.run_until_complete(self.readFromStream(data))
 
     def connection_lost(self, exc):
         # The socket has been closed
@@ -432,6 +447,7 @@ class SpecProtocol(asyncio.Protocol):
         self.registeredReplies[replyID] = reply
 
         if callable(replyCallback):
+            reply.cmd = message.name
             reply.callback = replyCallback
 
         self.__send_msg_no_reply(message)
@@ -514,6 +530,7 @@ class SpecClient:
             self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port))
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
+        self.sample_name = ""
 
     def register_channel(self, channel, reciever=None):
         self.protocol.registerChannel(channel, register=True, recieverSlot=reciever)
@@ -522,6 +539,7 @@ class SpecClient:
         self.protocol.send_msg_cmd(cmd)
 
     def setuser(self, username):
+        self.user = username
         self.send_command("SPEC_USER = \"%s\"" % username)
         self.send_command("SPEC_USERCRED[0] = \"user=%s\"" % username)
         self.send_command("SPEC_USERCRED[1] = \"secret=%s\"" % config.get('api_key'))
@@ -532,6 +550,7 @@ class SpecClient:
         self.send_command("SPEC_USERCRED[2] = \"proposal=%s\"" % proposal)
 
     def sample(self, name, kind):
+        self.sample_name = name
         self.send_command("sample \"%s\" %d" % (name, kind))
 
     def status(self):
@@ -547,7 +566,22 @@ class SpecClient:
         self.send_command("umv en %d" % energy)
 
     def map_holder(self):
-        self.send_command("cmesh xp -8 8 4 yp -4.5 5 25")
+        self.send_command("cmesh xp -8 8 4 yp -5 5 25")
+
+    def plot_holder(self, name=False):
+        if PLOT_ENABLED:
+            output_notebook()
+            if name:
+                sgmq = sgmdata.SGMQuery(sample=name, user=self.user, data=False)
+            else:
+                sgmq = sgmdata.SGMQuery(sample=self.sample_name, user=self.user, data=False)
+            data = sgmdata.SGMData(
+                sorted([p.replace('/home/jovyan/data', '/SpecData') for p in sgmq.paths],
+                       key=lambda x: x.split('/')[-1].split('.')[0])[-1])
+            scan = data.scans[[k for k in data.scans.keys()][0]]
+            scan[[k for k in scan.__dict__.keys()][0]].plot(table=True)
+        else:
+            print("Plotting not currently enabled")
 
     def light(self, percent=20):
         self.send_command("lights %d" % percent)
@@ -566,9 +600,6 @@ class SpecClient:
             time = float(sp_scan[4]) * float(sp_scan[8])
         time = time * 1.5
         return time
-
-    def set_recipient(self, email):
-        self.send_command("ALERT_EMAIL = sprintf(")
 
     def make_macro(self, plate, coords=True):
         self.total_time = 0

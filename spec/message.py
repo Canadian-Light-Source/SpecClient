@@ -15,10 +15,26 @@ import struct
 import time
 import types
 import logging
+import numpy as np
 
 from spec.reply import SpecReply
 
-(DOUBLE, STRING, ERROR, ASSOC) = (1, 2, 3, 4)
+(DOUBLE,
+ STRING,
+ ERROR,
+ ASSOC,
+ ARR_DOUBLE,
+ ARR_FLOAT,
+ ARR_LONG,
+ ARR_ULONG,
+ ARR_SHORT,
+ ARR_USHORT,
+ ARR_CHAR,
+ ARR_UCHAR,
+ ARR_STRING,
+ ARR_LONG64,
+ ARR_ULONG64
+ ) = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
 
 MAGIC_NUMBER = 4277009102
 NATIVE_HEADER_VERSION = 4
@@ -170,7 +186,7 @@ class SpecMessage:
         consumedBytes = 0
 
         while (
-            self.bytesToRead > 0 and len(streamBuf[consumedBytes:]) >= self.bytesToRead
+                self.bytesToRead > 0 and len(streamBuf[consumedBytes:]) >= self.bytesToRead
         ):
             if self.readheader:
                 self.readheader = False
@@ -179,7 +195,7 @@ class SpecMessage:
                 )
                 consumedBytes = self.headerLength
             else:
-                rawdata = streamBuf[consumedBytes : consumedBytes + self.bytesToRead]
+                rawdata = streamBuf[consumedBytes: consumedBytes + self.bytesToRead]
                 consumedBytes += self.bytesToRead
                 self.bytesToRead = 0
 
@@ -205,7 +221,7 @@ class SpecMessage:
         the data read
         """
         data = rawstring[:-1]  # remove last NULL byte
-
+        dType = ''
         if datatype == ERROR:
             return data
         elif datatype == STRING:
@@ -227,8 +243,28 @@ class SpecMessage:
             return data
         elif datatype == ASSOC:
             return rawtodictonary(rawstring)
+        elif datatype == ARR_DOUBLE:
+            dType = 'd'
+        elif datatype == ARR_FLOAT:
+            dType = 'f'
+        elif datatype == ARR_LONG:
+            dType = 'l'
+        elif datatype == ARR_ULONG:
+            dType = 'I'
+        elif datatype == ARR_SHORT:
+            dType = 'h'
+        elif datatype == ARR_USHORT:
+            dType = 'H'
         else:
-            raise TypeError
+            raise TypeError("SpecMessage not configured to conver that type of array")
+        if dType:
+            if self.rows == 1:
+                data = np.ndarray(shape=(self.cols), dtype=dType, buffer=rawstring)
+            elif self.cols == 1:
+                data = np.ndarray(shape=(self.rows), dtype=dType, buffer=rawstring)
+            else:
+                data = np.ndarray(shape=(self.rows, self.cols), dtype=dType, buffer=rawstring)
+            return data
 
     def dataType(self, data):
         """Try to guess data type
@@ -311,6 +347,7 @@ class message2(SpecMessage):
     def sendingString(self):
         if self.type is None:
             # invalid message
+            print("Error: Couldn't determine type")
             return ""
 
         data = self.sendingDataString(self.data, self.type)
@@ -383,7 +420,7 @@ class message3(SpecMessage):
 
     def sendingString(self):
         if self.type is None:
-            # invalid message
+            print("Error: Couldn't determine type")
             return ""
 
         data = self.sendingDataString(self.data, self.type)
@@ -453,7 +490,7 @@ class message4(SpecMessage):
 
     def sendingString(self):
         if self.type is None:
-            # invalid message
+            print("Error: Couldn't determine type")
             return ""
 
         data = self.sendingDataString(self.data, self.type)
