@@ -22,6 +22,21 @@ sc.make_macro(plate) #Takes dictionary created from plot_holder GUI, and creates
 sc.run_macro() #executes sc.send_command('~/SpecMacros/plate.mac')
 ```
 
+## Subscribe to channel with Callback
+```python
+from ipywidgets import Text
+from Ipython.display import display
+
+txt = Text(disabled=True)
+
+def disp_mot_position(name, value, epoch):
+    if isinstance(value, str):
+        txt.value = f"{name}: {value}"
+
+sc.register_channel("motor/en/position", reciever=disp_mot_position)
+display(txt)
+```
+
 ## Grabbing data with Callback
 ```python
 import matplotlib.pyplot as plt
