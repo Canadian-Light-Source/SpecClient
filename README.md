@@ -22,7 +22,7 @@ sc.make_macro(plate) #Takes dictionary created from plot_holder GUI, and creates
 sc.run_macro() #executes sc.send_command('~/SpecMacros/plate.mac')
 ```
 
-## Grabbing data
+## Grabbing data with Callback
 ```python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,4 +31,9 @@ async def plotMCA(reply):
     plt.plot(np.linspace(10, 2560, 256), reply.data, label=str(reply.cmd))
 
 sc.protocol.send_msg_chan_read('var/MCA1_DATA', callback=plotMCA)
+```
+
+## Grabbing data on demand
+```python
+arr = sc.get_date('var/MCA2_DATA')
 ```

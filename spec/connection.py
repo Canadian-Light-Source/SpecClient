@@ -316,13 +316,10 @@ class SpecProtocol(asyncio.Protocol):
                                         "Unexpected error while receiving a message from server"
                                     )
                                 else:
+                                    del self.registeredReplies[replyID]
                                     reply.update(
                                         message.data, message.type == ERROR, message.err
                                     )
-                                    if hasattr(reply, 'callback'):
-                                        del self.registeredReplies[replyID]
-                                    else:
-                                        self.registeredReplies[replyID] = reply
 
                         elif message.cmd == EVENT:
                             try:
@@ -535,16 +532,13 @@ class SpecClient:
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
         self.sample_name = ""
 
-    def get_data(self, property, callback=None):
-        if property.split('/')[0] not in ['var', 'motor', 'scaler', 'output']:
-            property = 'var/' + property
-        reply = self.protocol.send_msg_chan_read(property, callback=callback)
-        id = reply.id
-        if not callback and id > 0:
-            while not self.protocol.registeredReplies[id].data:
-                time.sleep(1)
-        reply = self.protocol.registeredReplies.pop(id)
-        return reply.data
+    async def get_data(self, property):
+        fut = asyncio.Future()
+        def callback(reply):
+            if not fut.cancelled():
+                fut.set_result(reply.data)
+        self.protocol.send_msg_chan_read(property, callback=callback)
+        return await fut
 
     def register_channel(self, channel, reciever=None):
         self.protocol.registerChannel(channel, register=True, recieverSlot=reciever)
