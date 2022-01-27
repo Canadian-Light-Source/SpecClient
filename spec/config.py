@@ -2,7 +2,7 @@ import os
 import sys
 
 cfg = {
-    'version': u'0.1b',
+    'version': u'0.2b',
 
 }
 
