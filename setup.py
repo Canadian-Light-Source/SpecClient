@@ -4,9 +4,9 @@ def readme():
     with open('README.md') as f:
         README = f.read()
     return README
-exec(open('spec/version.py').read())
+exec(open('specc/version.py').read())
 setup(
-    name="jupyter-spec-client",
+    name="jupyter-specc-client",
     version=__version__,
     description="Module for communicating with Spec control software from Jupyter at the SGM Beamline at the Canadian Light Source.",
     long_description=readme(),
@@ -23,8 +23,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        "sgm-data",
         "requests",
+        "numpy"
     ]
 
 

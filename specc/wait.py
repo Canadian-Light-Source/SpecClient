@@ -21,7 +21,7 @@ import types
 import asyncio
 
 
-from spec.error import SpecClientError, SpecClientTimeoutError
+from specc.error import SpecClientError, SpecClientTimeoutError
 
 
 def spawn_task(func, *args, **kwargs):

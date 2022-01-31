@@ -1,6 +1,6 @@
-from spec.message import *
-from spec.message import message as spec_message
-from spec.wait import *
+from specc.message import *
+from specc.message import message as spec_message
+from specc.wait import *
 import asyncio
 
 
@@ -202,7 +202,7 @@ class SpecChannel:
         connection = self.connection()
 
         if not connection.on_con_lost.result():
-            # make sure spec is connected, we give a short timeout
+            # make sure specc is connected, we give a short timeout
             # because it is supposed to be the case already
             value = waitReply(connection, "send_msg_chan_read", (self.spec_chan_name,))
             value = asyncio.ensure_future(value)
@@ -264,7 +264,6 @@ class SpecProtocol(asyncio.Protocol):
             try:
                 consumedBytes = message.readFromStream(s[offset:])
             except Exception as e:
-                print(f"MESSAGE ERROR: {e}")
                 if len(self.buffer):
                     self.buffer = self.buffer[1:]
                 else:

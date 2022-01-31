@@ -1,9 +1,11 @@
 import os
 import sys
+from .version import __version__
 
 cfg = {
-    'version': u'0.2b',
-
+    'version': f'{__version__}',
+    'server': '127.0.0.1',
+    'port': 6510
 }
 
 

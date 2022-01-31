@@ -17,7 +17,7 @@ import types
 import logging
 import numpy as np
 
-from spec.reply import SpecReply
+from specc.reply import SpecReply
 
 (DOUBLE,
  STRING,

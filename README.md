@@ -1,25 +1,17 @@
-# JupyterSpecClient
-Tools for running SPEC from a jupyter notebook. 
+# SpecClient
+Tools for handling a connection to SPEC server, implimented in asyncio. 
 
 ## Starting the client
+
 ```python
-from spec.connection import SpecClient
-sc = SpecClient('127.0.0.1', 6510)
+from specc import Client
+
+sc = Client('127.0.0.1', 6510) #Or set server & port in config.py, and simply execute Client()
 ```
 
 ## Sending Spec commands
 ```python
 sc.send_command("umeg; umv en 900; optimize_counts")
-
-#builtin commands
-sc.setuser('regiert')
-sc.status() #displays status in spec tty
-sc.en(900)
-sc.sample("Sample Name", 1) # 1 - sample, 2 - Reference, 3 - Normalization, 4 - Environment, 5 - None
-sc.map_holder() #Will map hexapod saving under 'Sample Name' in account 'regiert'
-sc.plot_holder() #Will plot last map, or you can provided keyword name=samplename
-sc.make_macro(plate) #Takes dictionary created from plot_holder GUI, and creates new '~/SpecMacros/plate.mac' file
-sc.run_macro() #executes sc.send_command('~/SpecMacros/plate.mac')
 ```
 
 ## Subscribe to channel with Callback
@@ -31,9 +23,9 @@ txt = Text(disabled=True)
 
 def disp_mot_position(name, value, epoch):
     if isinstance(value, str):
-        txt.value = f"{name}: {value}"
+        txt.value = f"{name}: {value} @ {epoch}"
 
-sc.register_channel("motor/en/position", reciever=disp_mot_position)
+sc.register_channel("motor/en/position", callback=disp_mot_position)
 display(txt)
 ```
 
@@ -45,10 +37,10 @@ import numpy as np
 async def plotMCA(reply):
     plt.plot(np.linspace(10, 2560, 256), reply.data, label=str(reply.cmd))
 
-sc.protocol.send_msg_chan_read('var/MCA1_DATA', callback=plotMCA)
+sc.channel_read('var/MCA1_DATA', callback=plotMCA)
 ```
 
 ## Grabbing data on demand
 ```python
-arr = sc.get_date('var/MCA2_DATA')
+arr = await sc.get_data('var/MCA2_DATA')
 ```
