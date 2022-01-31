@@ -1,6 +1,9 @@
 from .connection import SpecProtocol
 from . import config
 import asyncio
+import nest_asyncio
+
+nest_asyncio.apply()
 
 
 class Client:

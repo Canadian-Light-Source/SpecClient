@@ -24,7 +24,8 @@ setup(
     include_package_data=True,
     install_requires=[
         "requests",
-        "numpy"
+        "numpy",
+        "nest_asyncio"
     ]
 
 
