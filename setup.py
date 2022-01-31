@@ -6,7 +6,7 @@ def readme():
     return README
 exec(open('specc/version.py').read())
 setup(
-    name="jupyter-specc-client",
+    name="spec-client",
     version=__version__,
     description="Module for communicating with Spec control software from Jupyter at the SGM Beamline at the Canadian Light Source.",
     long_description=readme(),
