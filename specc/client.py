@@ -32,8 +32,9 @@ class Client:
             None
         """
         self.protocol.send_msg_chan_read(property, callback=callback)
-
-    async def get_data(self, property):
+        
+    @asyncio.coroutine
+    def get_data(self, property):
         """
         Asynchronous helper function to get single property from Spec Server.
 
@@ -50,7 +51,8 @@ class Client:
                 fut.set_result(reply.data)
 
         self.protocol.send_msg_chan_read(property, callback=callback)
-        return await fut
+        
+        return yield fut
 
     def register_channel(self, channel, callback=None):
         """
