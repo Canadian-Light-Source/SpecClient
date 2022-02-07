@@ -1,3 +1,2 @@
 numpy
 requests
-nest_asyncio
