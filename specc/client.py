@@ -1,10 +1,12 @@
 from .connection import SpecProtocol
 from . import config
 import asyncio
-import nest_asyncio
 
-nest_asyncio.apply()
-
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+except ImportError:
+    pass
 
 class Client:
     def __init__(self, host=None, port=None):
