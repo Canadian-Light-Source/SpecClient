@@ -65,8 +65,9 @@ class SpecWaitObject:
     def disconnected(self):
         """Callback triggered by a 'disconnected' event."""
         self.isdisconnected = True
-
-    async def waitReply(self, command, argsTuple, timeout=None):
+        
+    @asyncio.coroutine
+    def waitReply(self, command, argsTuple, timeout=None):
         """Wait for a reply from Spec
         Arguments:
         command - - method returning a replyID to be executed
@@ -92,7 +93,8 @@ class SpecWaitObject:
                     return
                 return self.value
 
-    async def waitChannelUpdate(self, chanName, waitValue=None, timeout=None):
+    @asyncio.coroutine
+    def waitChannelUpdate(self, chanName, waitValue=None, timeout=None):
         """Wait for a channel update
         Arguments:
         chanName - - channel name
@@ -139,8 +141,9 @@ class SpecWaitObject:
             )
 
         self.value = value
-
-    async def channelUpdated(self, channelValue):
+        
+    @asyncio.coroutine
+    def channelUpdated(self, channelValue):
         """Callback triggered by a channel update
         If channel was unregistered, we skip the first update,
         else we update our internal value
