@@ -51,8 +51,8 @@ class Client:
                 fut.set_result(reply.data)
 
         self.protocol.send_msg_chan_read(property, callback=callback)
-        
-        return yield fut
+        result = yield from fut
+        return result
 
     def register_channel(self, channel, callback=None):
         """
