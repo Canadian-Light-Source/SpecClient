@@ -53,4 +53,4 @@ class SpecReply:
         return self.data
 
     def __str__(self):
-        return "{" + f"'id': {self.id}, 'cmd': {self.cmd}, 'modified': {self.modified}" + "}"
+        return "{" + "'id': {}, 'cmd': {}, 'modified': {}".format(self.id,self.cmd, self.modified) + "}"
