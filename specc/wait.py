@@ -88,7 +88,7 @@ class SpecWaitObject:
                     func(*argsTuple, callback=self.replyArrived)
 
                 try:
-                    await asyncio.wait_for(self.spec_reply_arrived_event.wait(), timeout)
+                    yield from asyncio.wait_for(self.spec_reply_arrived_event.wait(), timeout)
                 except asyncio.TimeoutError:
                     return
                 return self.value
@@ -123,7 +123,7 @@ class SpecWaitObject:
             else:
                 while waitValue != self.value:
                     try:
-                        await asyncio.wait_for(self.channel_updated_event.wait(), timeout)
+                        yield from asyncio.wait_for(self.channel_updated_event.wait(), timeout)
                     except asyncio.TimeoutError:
                         pass
 
