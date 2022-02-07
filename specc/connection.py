@@ -230,16 +230,16 @@ class SpecChannel:
 class SpecProtocol(asyncio.Protocol):
     def __init__(self, loop):
         self.transport = None
-        self.on_con_lost = loop.create_future()
+        self.on_con_lost = asyncio.Future()
         self.on_con_lost.set_result(False)
         self.registeredReplies = {}
         self.registeredChannels = {}
         self.state = None
         self.loop = loop
-        self.serverVersionF = loop.create_future()
+        self.serverVersionF = asyncio.Future()
         self.serverVersion = 4
         self.name = 'SPEC'
-        self.nameF = loop.create_future()
+        self.nameF = asyncio.Future()
         self.socket_write_event = asyncio.Event()
         self.outgoing_queue = []
         self.buffer = []
