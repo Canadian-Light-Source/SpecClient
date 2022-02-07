@@ -3,7 +3,7 @@ import sys
 from .version import __version__
 
 cfg = {
-    'version': f'{__version__}',
+    'version': "{}".format(__version__),
     'server': '127.0.0.1',
     'port': 6510
 }
