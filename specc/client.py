@@ -9,7 +9,7 @@ except ImportError:
     pass
 
 class Client:
-    def __init__(self, loop=None, host=None, port=None):
+    def __init__(self, host=None, port=None, loop=None):
         if loop:
             self.loop = loop
         else:
