@@ -10,10 +10,10 @@ except ImportError:
 
 class Client:
     def __init__(self, host=None, port=None, loop=None):
-        if loop:
-            self.loop = loop
-        else:
+        try:
             self.loop = asyncio.get_event_loop()
+        except:
+            self.loop = loop
         if not host:
             host = config.get('server', '127.0.0.1')
         if not port:
