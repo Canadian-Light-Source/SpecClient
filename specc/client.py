@@ -22,7 +22,8 @@ class Client:
             self.transport, self.protocol = self.loop.run_until_complete(
                 self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port))
         except RuntimeError:
-            self.transport, self.protocol = self.loop.call_soon(self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port))
+            task = asyncio.ensure_future(self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port))
+            self.transport, self.protocol = self.loop.create_task(task)
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
