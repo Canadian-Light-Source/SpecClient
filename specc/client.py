@@ -18,8 +18,11 @@ class Client:
             host = config.get('server', '127.0.0.1')
         if not port:
             port = config.get('port', 6510)
-        self.transport, self.protocol = self.loop.run_until_complete(
-            self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port))
+        try:
+            self.transport, self.protocol = self.loop.run_until_complete(
+                self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port))
+        except RuntimeError:
+            self.transport, self.protocol = yield self.loop.create_connection(lambda: SpecProtocol(self.loop), host.port)
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
