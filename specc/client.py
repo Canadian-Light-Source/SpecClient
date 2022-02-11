@@ -15,16 +15,17 @@ class Client:
         except:
             self.loop = loop
         if not host:
-            host = config.get('server', '127.0.0.1')
+            self.host = config.get('server', '127.0.0.1')
         if not port:
-            port = config.get('port', 6510)
+            self.port = config.get('port', 6510)
         try:
             self.transport, self.protocol = self.loop.run_until_complete(
-                self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port))
+                self.loop.create_connection(lambda: SpecProtocol(self.loop), self.host, self.port))
         except RuntimeError:
-            self.transport, self.protocol = yield self.loop.create_connection(lambda: SpecProtocol(self.loop), host.port)
+            self.transport, self.protocol = self.loop.create_connection(lambda: SpecProtocol(self.loop), self.host, self.port)
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
+
 
     def channel_read(self, property, callback=None):
         """
