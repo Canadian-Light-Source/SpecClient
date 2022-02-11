@@ -28,7 +28,7 @@ class Client:
 
     @asyncio.coroutine
     def _connect_async(self, task):
-        transport, protocol = yield asyncio.wait_for(task, 5)
+        transport, protocol = yield from asyncio.wait_for(task, 5)
         self.transport = transport
         self.protocol = protocol
 
