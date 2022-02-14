@@ -23,6 +23,8 @@ class Client:
         try:
             self.transport, self.protocol = self.loop.run_until_complete(coro)
         except RuntimeError:
+            self.protocol = asyncio.Future()
+            self.transport = asyncio.Future()
             fut = asyncio.ensure_future(coro)
             fut.add_done_callback(self._connect_async)
         self.total_time = None
@@ -30,9 +32,8 @@ class Client:
 
     def _connect_async(self, fut):
         transport, protocol = fut.result()
-        self.transport = transport
-        self.protocol = protocol
-
+        self.transport.set_result(transport)
+        self.protocol.set_result(protocol)
 
     def channel_read(self, property, callback=None):
         """
