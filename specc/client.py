@@ -1,7 +1,6 @@
 from .connection import SpecProtocol
 from . import config
 import asyncio
-import time
 
 try:
     import nest_asyncio
@@ -25,19 +24,8 @@ class Client:
             self.transport, self.protocol = self.loop.run_until_complete(coro)
             self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
         except RuntimeError:
-            self.protocol = asyncio.Future()
-            self.transport = asyncio.Future()
-            fut = asyncio.ensure_future(coro)
-            fut.add_done_callback(self._connect_async)
+            pass
         self.total_time = None
-
-
-    def _connect_async(self, fut):
-        print("Connected, recieving Future: %s" % fut)
-        transport, protocol = fut.result()
-        self.transport.set_result(transport)
-        self.protocol.set_result(protocol)
-        self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
     def channel_read(self, property, callback=None):
         """
@@ -72,13 +60,6 @@ class Client:
         self.protocol.send_msg_chan_read(property, callback=callback)
         result = yield from fut
         return result
-
-    @asyncio.coroutine
-    def register_channel_async(self, channel, callback=None):
-        if isinstance(self.protocol, asyncio.Future):
-            if self.protocol.done():
-                self.protocol = yield from self.protocol
-                self.protocol.registerChannel(channel, register=True, recieverSlot=callback)
 
     def register_channel(self, channel, callback=None):
         """
