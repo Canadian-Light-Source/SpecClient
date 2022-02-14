@@ -19,13 +19,20 @@ class Client:
             host = config.get('server', '127.0.0.1')
         if not port:
             port = config.get('port', 6510)
-        self.coro = self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port)
+        coro = self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port)
         try:
-            self.transport, self.protocol = self.loop.run_until_complete(self.coro)
+            self.transport, self.protocol = self.loop.run_until_complete(coro)
             self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
         except RuntimeError:
-            pass
+            self.future = asyncio.ensure_future(coro)
+            self.future.add_done_callback(self.set_protocol)
         self.total_time = None
+
+    def set_protocol(self, fut):
+        transport, protocol = fut.result()
+        self.transport = transport
+        self.protocol = protocol
+        self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
     def channel_read(self, property, callback=None):
         """
