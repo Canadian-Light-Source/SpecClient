@@ -34,7 +34,7 @@ class Client:
 
     def _connect_async(self, fut):
         print("Connected, recieving Future: %s" % fut)
-        transport, protocol = yield fut.result()
+        transport, protocol = fut.result()
         self.transport.set_result(transport)
         self.protocol.set_result(protocol)
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
