@@ -1,6 +1,7 @@
 from .connection import SpecProtocol
 from . import config
 import asyncio
+import time
 
 try:
     import nest_asyncio
@@ -80,6 +81,9 @@ class Client:
         Returns:
             None
         """
+        if isinstance(self.protocol, asyncio.Future):
+            while not self.protocol.done():
+                time.sleep(0.1)
         self.protocol.registerChannel(channel, register=True, recieverSlot=callback)
 
     def send_command(self, cmd):
