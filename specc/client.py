@@ -23,16 +23,17 @@ class Client:
         coro = self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port)
         try:
             self.transport, self.protocol = self.loop.run_until_complete(coro)
+            self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
         except RuntimeError:
             self.protocol = asyncio.Future()
             self.transport = asyncio.Future()
             fut = asyncio.ensure_future(coro)
             fut.add_done_callback(self._connect_async)
         self.total_time = None
-        self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
+
 
     def _connect_async(self, fut):
-        transport, protocol = fut.result()
+        transport, protocol = yield from fut.result()
         self.transport.set_result(transport)
         self.protocol.set_result(protocol)
 
