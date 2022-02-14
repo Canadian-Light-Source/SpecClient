@@ -33,9 +33,10 @@ class Client:
 
 
     def _connect_async(self, fut):
-        transport, protocol = yield from fut.result()
+        transport, protocol = fut.result()
         self.transport.set_result(transport)
         self.protocol.set_result(protocol)
+        self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
     def channel_read(self, property, callback=None):
         """
