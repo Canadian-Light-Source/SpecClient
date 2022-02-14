@@ -19,6 +19,7 @@ class Client:
         if not port:
             port = config.get('port', 6510)
         task = self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port)
+        print(type(task), repr(task))
         try:
             self.transport, self.protocol = self.loop.run_until_complete(task)
         except RuntimeError:
@@ -28,8 +29,7 @@ class Client:
 
     @asyncio.coroutine
     def _connect_async(self, task):
-        print(type(task), repr(task))
-        transport, protocol = yield task
+        transport, protocol = yield from task
         self.transport = transport
         self.protocol = protocol
 
