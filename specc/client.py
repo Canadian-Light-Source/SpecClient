@@ -9,6 +9,7 @@ except ImportError:
     pass
 
 class Client:
+
     def __init__(self, host=None, port=None, loop=None):
         try:
             self.loop = asyncio.get_event_loop()
@@ -18,19 +19,18 @@ class Client:
             host = config.get('server', '127.0.0.1')
         if not port:
             port = config.get('port', 6510)
-        task = self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port)
-        print(type(task), repr(task))
+        coro = self.loop.create_connection(lambda: SpecProtocol(self.loop), host, port)
         try:
-            self.transport, self.protocol = self.loop.run_until_complete(task)
+            self.transport, self.protocol = self.loop.run_until_complete(coro)
         except RuntimeError:
-            self.connect_task = self.loop.create_task(self._connect_async(task))
+            fut = asyncio.ensure_future(coro)
+            asyncio.ensure_future(self._connect_async(fut))
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
     @asyncio.coroutine
-    def _connect_async(self, task):
-        coro = self.loop.create_task(task)
-        transport, protocol = yield from asyncio.wait(coro)
+    def _connect_async(self, fut):
+        transport, protocol = yield from fut
         self.transport = transport
         self.protocol = protocol
 
