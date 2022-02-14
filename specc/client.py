@@ -23,7 +23,7 @@ class Client:
         try:
             self.transport, self.protocol = self.loop.run_until_complete(coro)
         except RuntimeError:
-            fut = asyncio.ensure_future(coro())
+            fut = asyncio.ensure_future(coro)
             print(fut, type(fut))
             asyncio.ensure_future(self._connect_async(fut))
         self.total_time = None
