@@ -24,15 +24,15 @@ class Client:
             self.transport, self.protocol = self.loop.run_until_complete(coro)
         except RuntimeError:
             fut = asyncio.ensure_future(coro)
-            wait = asyncio.wait_for(fut)
-            print(wait, type(wait))
             asyncio.ensure_future(self._connect_async(fut))
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
     @asyncio.coroutine
     def _connect_async(self, fut):
-        transport, protocol = yield from fut
+        wait = asyncio.wait(fut)
+        print(wait, type(wait))
+        transport, protocol = yield from wait
         self.transport = transport
         self.protocol = protocol
 
