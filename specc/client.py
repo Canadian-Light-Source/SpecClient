@@ -24,17 +24,15 @@ class Client:
             self.transport, self.protocol = self.loop.run_until_complete(coro)
         except RuntimeError:
             fut = asyncio.ensure_future(coro)
-            self._connect_async(fut)
+            fut.add_done_callback(self._connect_async)
         self.total_time = None
         self.send_command("p \"SpecClient %s, Connected\"" % config.get('version'))
 
     def _connect_async(self, fut):
-        if fut.done():
-            transport, protocol = fut.result()
-            self.transport = transport
-            self.protocol = protocol
-        else:
-            print("Coro not done")
+        transport, protocol = fut.result()
+        self.transport = transport
+        self.protocol = protocol
+
 
     def channel_read(self, property, callback=None):
         """
