@@ -72,6 +72,13 @@ class Client:
         result = yield from fut
         return result
 
+    @asyncio.coroutine
+    def register_channel_async(self, channel, callback=None):
+        if isinstance(self.protocol, asyncio.Future):
+            if self.protocol.done():
+                self.protocol = yield from self.protocol
+                self.protocol.registerChannel(channel, register=True, recieverSlot=callback)
+
     def register_channel(self, channel, callback=None):
         """
         Helper function to subscribe to a property of a Spec Server and assign a callback function.
@@ -83,9 +90,6 @@ class Client:
         Returns:
             None
         """
-        if isinstance(self.protocol, asyncio.Future):
-            while not self.protocol.done():
-                time.sleep(0.1)
         self.protocol.registerChannel(channel, register=True, recieverSlot=callback)
 
     def send_command(self, cmd):
