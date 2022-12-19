@@ -284,6 +284,9 @@ class SpecProtocol(asyncio.Protocol):
                             if replyID > 0:
                                 try:
                                     reply = self.registeredReplies[replyID]
+                                    reply.update(
+                                        message.data, message.type == ERROR, message.err
+                                    )
                                     if hasattr(reply, 'callback'):
                                         if asyncio.iscoroutinefunction(reply.callback):
                                             self.loop.create_task(reply.callback(reply))
@@ -293,9 +296,7 @@ class SpecProtocol(asyncio.Protocol):
                                     )
                                 else:
                                     del self.registeredReplies[replyID]
-                                    reply.update(
-                                        message.data, message.type == ERROR, message.err
-                                    )
+
 
                         elif message.cmd == EVENT:
                             try:
