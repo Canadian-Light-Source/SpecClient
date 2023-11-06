@@ -1,5 +1,5 @@
 # SpecClient
-Tools for handling a connection to SPEC server, implimented in asyncio. 
+Tools for handling a connection to SPEC server, implimented in asyncio.  Largely borrowed from [BLISS's comms](https://gitlab.esrf.fr/bliss/bliss/-/tree/master/bliss/comm).
 
 ## Starting the client
 
